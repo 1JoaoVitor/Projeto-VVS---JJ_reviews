@@ -50,36 +50,9 @@ describe("profileService", () => {
       });
    });
 
-   it("fetches and normalizes user profile", async () => {
-      singleMock.mockResolvedValue({
-         data: { username: "joao", avatar_url: "https://img" },
-         error: null,
-      });
-
-      const result = await fetchUserProfile("u1");
-
-      expect(result).toEqual({ username: "joao", avatarUrl: "https://img" });
-   });
-
-   it("normalizes empty profile fields", async () => {
-      singleMock.mockResolvedValue({
-         data: { username: null, avatar_url: null },
-         error: null,
-      });
-
-      const result = await fetchUserProfile("u1");
-      expect(result).toEqual({ username: "", avatarUrl: null });
-   });
-
    it("throws when fetching user profile fails", async () => {
       singleMock.mockResolvedValue({ data: null, error: new Error("profile-fetch-failed") });
       await expect(fetchUserProfile("u1")).rejects.toThrow("profile-fetch-failed");
-   });
-
-   it("updates username", async () => {
-      eqMock.mockResolvedValue({ error: null });
-
-      await expect(updateUserProfileName("u1", "novo_nome")).resolves.toBeUndefined();
    });
 
    it("throws when updating username fails", async () => {

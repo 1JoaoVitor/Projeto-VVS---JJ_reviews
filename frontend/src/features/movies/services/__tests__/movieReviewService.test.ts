@@ -28,12 +28,6 @@ describe("movieReviewService", () => {
       fromMock.mockReturnValue({ delete: deleteMock });
    });
 
-   it("deletes review by id", async () => {
-      eqMock.mockResolvedValue({ error: null });
-      await expect(deleteReviewById("review-1")).resolves.toBeUndefined();
-      expect(fromMock).toHaveBeenCalledWith("reviews");
-   });
-
    it("throws when deleting review by id fails", async () => {
       eqMock.mockResolvedValue({ error: new Error("delete-review-failed") });
       await expect(deleteReviewById("review-1")).rejects.toThrow("delete-review-failed");

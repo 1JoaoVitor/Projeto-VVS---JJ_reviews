@@ -1,6 +1,12 @@
 import { supabase } from "@/lib/supabase";
 import type { CustomList } from "@/types";
 import type { RawSupabaseList } from "../logic/listOperations";
+import {
+   applyLikedState,
+   buildCollaboratorInsertData,
+   buildInviteNotificationData,
+   flattenCollaborativeListsResponse,
+} from "../logic/listServiceTransforms";
 
 export async function fetchOwnedLists(userId: string, currentUserId?: string): Promise<RawSupabaseList[]> {
    const { data, error } = await supabase
@@ -21,11 +27,7 @@ export async function fetchOwnedLists(userId: string, currentUserId?: string): P
          .in("list_id", lists.map(l => l.id));
       
       if (!likesError && userLikes) {
-         const likedListIds = new Set(userLikes.map(l => l.list_id));
-         return lists.map(list => ({
-            ...list,
-            is_liked: likedListIds.has(list.id),
-         }));
+         return applyLikedState(lists, userLikes.map((like) => like.list_id));
       }
    }
    
@@ -41,11 +43,7 @@ export async function fetchCollaborativeLists(userId: string, currentUserId?: st
 
    if (error) throw error;
 
-   const collabData = data || [];
-   const lists = collabData.flatMap((item: { lists?: RawSupabaseList | RawSupabaseList[] | null }) => {
-      if (!item.lists) return [];
-      return Array.isArray(item.lists) ? item.lists : [item.lists];
-   });
+   const lists = flattenCollaborativeListsResponse(data);
    
    // If currentUserId is provided, check which lists the user has liked
    if (currentUserId) {
@@ -56,11 +54,7 @@ export async function fetchCollaborativeLists(userId: string, currentUserId?: st
          .in("list_id", lists.map(l => l.id));
       
       if (!likesError && userLikes) {
-         const likedListIds = new Set(userLikes.map(l => l.list_id));
-         return lists.map(list => ({
-            ...list,
-            is_liked: likedListIds.has(list.id),
-         }));
+         return applyLikedState(lists, userLikes.map((like) => like.list_id));
       }
    }
    
@@ -142,12 +136,7 @@ export async function addCollaboratorsToList(
 ): Promise<void> {
    if (collaboratorIds.length === 0) return;
 
-   const collaboratorsData = collaboratorIds.map((friendId) => ({
-      list_id: listId,
-      user_id: friendId,
-      role: "member",
-      status: "pending",
-   }));
+   const collaboratorsData = buildCollaboratorInsertData(listId, collaboratorIds);
 
    const { error } = await supabase.from("list_collaborators").insert(collaboratorsData);
    if (error) throw error;
@@ -159,18 +148,9 @@ export async function notifyListCollaborators(
    listType: "private" | "partial_shared" | "full_shared",
    collaboratorIds: string[]
 ): Promise<void> {
-   if (collaboratorIds.length === 0 || listType === "private") return;
+   const notificationsData = buildInviteNotificationData(ownerId, listId, listType, collaboratorIds);
 
-   const notificationsData = collaboratorIds.map((friendId) => ({
-      user_id: friendId,
-      sender_id: ownerId,
-      type: "list_invite",
-      message:
-         listType === "full_shared"
-            ? "convidou você para uma Lista Unificada!"
-            : "convidou você para uma Lista Colaborativa!",
-      reference_id: listId,
-   }));
+   if (notificationsData.length === 0) return;
 
    await supabase.from("notifications").insert(notificationsData);
 }

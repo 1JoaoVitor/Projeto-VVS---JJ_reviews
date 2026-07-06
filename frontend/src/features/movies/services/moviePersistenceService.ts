@@ -1,46 +1,20 @@
 import { supabase } from "@/lib/supabase";
 import { notifyFriendsDiaryActivity } from "@/features/diary/services/diaryService";
+import {
+   buildFullSharedListReviewInsertPayload,
+   buildPartialSharedListReviewInsertPayload,
+   buildPersonalReviewPayload,
+   buildSyncListReviewRpcPayload,
+   shouldSaveDiaryEntry,
+   type FullSharedListReviewPayload,
+   type PartialSharedListReviewPayload,
+   type PersonalReviewPayload,
+   type SyncListReviewPayload,
+} from "../logic/moviePersistenceTransforms";
 
 interface ExistingProfileReview {
    id: string;
    status?: "watched" | "watchlist" | string;
-}
-
-interface PersonalReviewPayload {
-   rating: number | null;
-   review: string | null;
-   recommended: string | null;
-   runtime: number;
-   location: string | null;
-   status: "watched" | "watchlist";
-   attachment_url: string | null;
-   watched_date?: string;
-}
-
-interface FullSharedListReviewPayload {
-   rating: number;
-   review: string;
-   recommended: string;
-}
-
-interface PartialSharedListReviewPayload {
-   rating: number;
-   review: string;
-   recommended: string;
-   location: string;
-   runtime: number;
-}
-
-interface SyncListReviewPayload {
-   listId: string;
-   tmdbId: number;
-   rating: number;
-   review: string;
-   recommended: string;
-   status: "watched" | "watchlist";
-   addedBy: string;
-   location: string;
-   runtime: number;
 }
 
 export async function getAuthenticatedUser() {
@@ -111,19 +85,12 @@ export async function upsertPersonalReview(
 
    if (existingError) throw existingError;
 
-   const reviewPayload = {
-      tmdb_id: tmdbId,
-      user_id: userId,
-      ...payload,
-   };
-
-   const watchedDate = payload.watched_date;
-   delete (reviewPayload as { watched_date?: string }).watched_date;
+   const { reviewPayload, watchedDate } = buildPersonalReviewPayload(userId, tmdbId, payload);
 
    if (existingPersonalReview) {
       const { error } = await supabase.from("reviews").update(reviewPayload).eq("id", existingPersonalReview.id);
       if (error) throw error;
-      if (payload.status === "watched") {
+      if (shouldSaveDiaryEntry(payload.status)) {
          await saveDiaryEntry(userId, tmdbId, watchedDate);
       }
       return;
@@ -132,7 +99,7 @@ export async function upsertPersonalReview(
    const { error } = await supabase.from("reviews").insert([reviewPayload]);
    if (error) throw error;
 
-   if (payload.status === "watched") {
+   if (shouldSaveDiaryEntry(payload.status)) {
       await saveDiaryEntry(userId, tmdbId, watchedDate);
    }
 }
@@ -184,12 +151,7 @@ export async function upsertFullSharedListReview(
       return;
    }
 
-   const { error } = await supabase.from("list_reviews").insert({
-      list_id: listId,
-      tmdb_id: tmdbId,
-      user_id: null,
-      ...payload,
-   });
+   const { error } = await supabase.from("list_reviews").insert(buildFullSharedListReviewInsertPayload(listId, tmdbId, payload));
 
    if (error) throw error;
 }
@@ -216,28 +178,15 @@ export async function upsertPartialSharedListReview(
       return;
    }
 
-   const { error } = await supabase.from("list_reviews").insert({
-      list_id: listId,
-      tmdb_id: tmdbId,
-      user_id: userId,
-      ...payload,
-   });
+   const { error } = await supabase.from("list_reviews").insert(
+      buildPartialSharedListReviewInsertPayload(listId, tmdbId, userId, payload)
+   );
 
    if (error) throw error;
 }
 
 export async function syncReviewToListMembers(payload: SyncListReviewPayload): Promise<void> {
-   const { error } = await supabase.rpc("sync_review_to_list_members", {
-      p_list_id: payload.listId,
-      p_tmdb_id: payload.tmdbId,
-      p_rating: payload.rating,
-      p_review: payload.review,
-      p_recommended: payload.recommended,
-      p_status: payload.status,
-      p_added_by: payload.addedBy,
-      p_location: payload.location,
-      p_runtime: payload.runtime,
-   });
+   const { error } = await supabase.rpc("sync_review_to_list_members", buildSyncListReviewRpcPayload(payload));
 
    if (error) throw error;
 }

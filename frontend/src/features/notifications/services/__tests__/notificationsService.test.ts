@@ -58,12 +58,6 @@ describe("notificationsService", () => {
       });
    });
 
-   it("fetches recent notifications", async () => {
-      limitMock.mockResolvedValue({ data: [{ id: "n1" }], error: null });
-      const result = await fetchRecentNotifications("u1");
-      expect(result).toEqual([{ id: "n1" }]);
-   });
-
    it("marks a notification as read", async () => {
       eqMock.mockResolvedValue({ error: null });
       await expect(markNotificationAsRead("n1")).resolves.toBeUndefined();

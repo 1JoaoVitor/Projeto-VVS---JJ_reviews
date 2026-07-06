@@ -1,5 +1,10 @@
 import { supabase } from "@/lib/supabase";
 import type { RawNotification } from "../logic/notificationOperations";
+import {
+   buildMarkAllNotificationsReadPayload,
+   buildNotificationsChannelName,
+   normalizeRecentNotifications,
+} from "../logic/notificationsServiceTransforms";
 
 export async function fetchRecentNotifications(userId: string): Promise<RawNotification[]> {
    const { data, error } = await supabase
@@ -15,13 +20,13 @@ export async function fetchRecentNotifications(userId: string): Promise<RawNotif
       .limit(50);
 
    if (error) throw error;
-   return (data || []) as RawNotification[];
+   return normalizeRecentNotifications(data as RawNotification[] | null | undefined);
 }
 
 export async function markNotificationAsRead(notificationId: string): Promise<void> {
    const { error } = await supabase
       .from("notifications")
-      .update({ is_read: true })
+      .update(buildMarkAllNotificationsReadPayload())
       .eq("id", notificationId);
 
    if (error) throw error;
@@ -30,7 +35,7 @@ export async function markNotificationAsRead(notificationId: string): Promise<vo
 export async function markAllUserNotificationsAsRead(userId: string): Promise<void> {
    const { error } = await supabase
       .from("notifications")
-      .update({ is_read: true })
+   .update(buildMarkAllNotificationsReadPayload())
       .eq("user_id", userId)
       .eq("is_read", false);
 
@@ -39,7 +44,7 @@ export async function markAllUserNotificationsAsRead(userId: string): Promise<vo
 
 export function subscribeNotifications(userId: string, onInsert: () => void): () => void {
    const subscription = supabase
-      .channel("realtime:notifications")
+      .channel(buildNotificationsChannelName())
       .on(
          "postgres_changes",
          {

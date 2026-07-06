@@ -160,6 +160,20 @@ describe("movieMatcher", () => {
       const callUrl = (mockFetch.mock.calls[0]?.[0] as string) || "";
       expect(callUrl).toContain("query=The+Matrix");
     });
+
+    it("should cache unmatched results as well", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ results: [] }),
+      } as Response);
+
+      const first = await searchMovieInTmdb("No Match", 2024);
+      const second = await searchMovieInTmdb("No Match", 2024);
+
+      expect(first.matched).toBe(false);
+      expect(second.matched).toBe(false);
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe("batchMatchMovies", () => {
@@ -397,6 +411,17 @@ describe("movieMatcher", () => {
       expect(isMatchGoodEnough(result, 80)).toBe(false);
       expect(isMatchGoodEnough(result, 70)).toBe(true);
     });
+
+    it("should treat threshold as inclusive", () => {
+      const result: TmdbMatchResult = {
+        query: "The Matrix",
+        matched: true,
+        confidence: 70,
+        tmdbId: 603,
+      };
+
+      expect(isMatchGoodEnough(result, 70)).toBe(true);
+    });
   });
 
   describe("formatMatchResult", () => {
@@ -427,6 +452,19 @@ describe("movieMatcher", () => {
       const formatted = formatMatchResult(result);
       expect(formatted).toContain("✗");
       expect(formatted).toContain("NonexistentMovie");
+    });
+
+    it("should format result with custom title and year", () => {
+      const result: TmdbMatchResult = {
+        query: "Blade Runner",
+        matched: true,
+        title: "Blade Runner",
+        year: 1982,
+        confidence: 88,
+        tmdbId: 78,
+      };
+
+      expect(formatMatchResult(result)).toBe("✓ Blade Runner (1982) - 88% match");
     });
   });
 });

@@ -1,9 +1,5 @@
 import { supabase } from "@/lib/supabase";
-
-export interface UserProfileRecord {
-   username: string;
-   avatarUrl: string | null;
-}
+import { buildAvatarFileName, normalizeUserProfile, type UserProfileRecord } from "../logic/profileServiceTransforms";
 
 export async function fetchUserProfile(userId: string): Promise<UserProfileRecord> {
    const { data, error } = await supabase
@@ -14,10 +10,7 @@ export async function fetchUserProfile(userId: string): Promise<UserProfileRecor
 
    if (error) throw error;
 
-   return {
-      username: data?.username || "",
-      avatarUrl: data?.avatar_url || null,
-   };
+   return normalizeUserProfile(data);
 }
 
 export async function updateUserProfileName(userId: string, username: string): Promise<void> {
@@ -30,7 +23,7 @@ export async function updateUserProfileName(userId: string, username: string): P
 }
 
 export async function uploadUserAvatar(userId: string, imageBlob: Blob): Promise<string> {
-   const fileName = `${userId}-${Math.random()}.jpg`;
+   const fileName = buildAvatarFileName(userId, Math.random());
 
    const { error: uploadError } = await supabase.storage
       .from("avatars")
