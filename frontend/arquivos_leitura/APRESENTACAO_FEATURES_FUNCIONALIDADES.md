@@ -1,6 +1,6 @@
 # Apresentação das Features e Funcionalidades do JJ Reviews
 
-Este documento resume, em linguagem de apresentação, as principais features e funcionalidades do frontend do JJ Reviews. A ideia é servir como roteiro para explicar o sistema de ponta a ponta.
+Este documento resume, em linguagem de apresentação, as principais features e funcionalidades do frontend do JJ Reviews.
 
 ## 1. Visão Geral do Produto
 
@@ -14,7 +14,6 @@ O JJ Reviews é uma aplicação web para organizar a experiência de filmes com 
 - jogos e experiências interativas;
 - perfil público e páginas de apoio.
 
-Na prática, o app combina organização pessoal, elementos sociais e recursos de descoberta de conteúdo.
 
 ## 2. Navegação e Estrutura da Aplicação
 
@@ -271,7 +270,7 @@ A roleta de filmes oferece:
 - apoio à decisão do que assistir;
 - recurso leve e rápido para descoberta.
 
-## 10. Dashboard e Visão Rápida
+## 10. Dashboard 
 
 A dashboard funciona como resumo visual do catálogo.
 
@@ -296,17 +295,13 @@ Além das features principais, o projeto inclui vários recursos de suporte à e
 - feedback visual por toast;
 - integração com notificações push.
 
-Esses elementos não são o foco central da apresentação, mas ajudam a mostrar que a experiência foi pensada como aplicativo completo.
 
-## 12. Resumo Para Apresentação
-
-Se você quiser explicar o projeto de forma curta, a melhor síntese é esta:
+## 12. Resumo 
 
 - o JJ Reviews organiza filmes assistidos, watchlist e listas;
 - permite colaboração, compartilhamento e interação social;
 - oferece importação de dados externos;
 - traz recomendações personalizadas;
-- inclui jogos para aumentar engajamento;
+- inclui jogos;
 - tem suporte a perfil público, notificações e experiência mobile.
 
-Em uma frase: é uma plataforma de organização e descoberta de filmes com camada social, importação de dados e experiências interativas.

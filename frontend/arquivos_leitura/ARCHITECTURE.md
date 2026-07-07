@@ -11,7 +11,7 @@ Este documento resume as decis√µes arquiteturais do frontend e serve como refer√
 ## Stack Principal
 
 - React + TypeScript + Vite
-- Vitest + Testing Library
+- Vitest + Playwright
 - Supabase para auth, banco, storage e realtime
 - Capacitor para empacotamento mobile
 

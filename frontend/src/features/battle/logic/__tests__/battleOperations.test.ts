@@ -25,35 +25,27 @@ function allParticipants(result: { fighters: MovieData[]; byes: MovieData[] }) {
 }
 
 describe("shuffleArray", () => {
-   // M1-A: conta chamadas do Math.random — com i >= 0 seriam length chamadas, não length-1
-   it("[M1-A] deve chamar Math.random exatamente (length - 1) vezes", () => {
+   it("deve chamar Math.random exatamente (length - 1) vezes", () => {
       const spy = vi.spyOn(Math, "random").mockReturnValue(0.5);
       shuffleArray([1, 2, 3, 4]); 
       expect(spy).toHaveBeenCalledTimes(3);
       spy.mockRestore();
    });
 
-   // M1-D / M1-F: verifica que j pode assumir valores iguais a i (sem i+1, não consegue)
-   it("[M1-D/F] deve permitir que qualquer posição troque com ela mesma (j pode = i)", () => {
-      // Math.random() → 0.99... → j = floor(0.99 * (i+1)) = i quando possível
+   it("deve permitir que qualquer posição troque com ela mesma (j pode = i)", () => {
       const spy = vi.spyOn(Math, "random").mockReturnValue(0.9999);
       const result = shuffleArray([10, 20, 30]);
-      // Com i+1 correto e random≈1: j=i em todas as iterações → array inalterado
       expect(result).toEqual([10, 20, 30]);
       spy.mockRestore();
    });
 
-   // M1-G: garante que a troca de posição realmente ocorre
-   it("[M1-G] deve reposicionar elementos quando Math.random produz j diferente de i", () => {
-      // i=1, random=0 → j=0: espera troca entre índices 0 e 1
+   it("deve reposicionar elementos quando Math.random produz j diferente de i", () => {
       const spy = vi.spyOn(Math, "random").mockReturnValue(0);
-      // Array [A, B, C]: i=2 j=0→swap(2,0)=[C,B,A]; i=1 j=0→swap(1,0)=[B,C,A]
       const result = shuffleArray(["A", "B", "C"]);
       expect(result).toEqual(["B", "C", "A"]);
       spy.mockRestore();
    });
 
-   // Sanidade: não modifica original e mantém todos os elementos
    it("não deve modificar o array original", () => {
       const original = [1, 2, 3, 4, 5];
       const copy = [...original];
@@ -77,31 +69,26 @@ describe("shuffleArray", () => {
 });
 
 describe("nextPowerOfTwo", () => {
-   // M2-A: n=0 deve retornar 0, não tentar log2(0) = -Infinity
    it("[M2-A] deve retornar 0 para n=0 (guarda n <= 0 cobre o zero)", () => {
       expect(nextPowerOfTwo(0)).toBe(0);
    });
 
-   // M2-B: negativos devem retornar 0
-   it("[M2-B] deve retornar 0 para qualquer n negativo", () => {
+   it("deve retornar 0 para qualquer n negativo", () => {
       expect(nextPowerOfTwo(-1)).toBe(0);
       expect(nextPowerOfTwo(-100)).toBe(0);
    });
 
-   // M2-C/D: valores positivos nunca devem retornar 0
-   it("[M2-C/D] deve retornar valor > 0 para qualquer n positivo", () => {
+   it("deve retornar valor > 0 para qualquer n positivo", () => {
       expect(nextPowerOfTwo(1)).toBeGreaterThan(0);
       expect(nextPowerOfTwo(7)).toBeGreaterThan(0);
    });
 
-   // M2-E: retorno do sad path é exatamente 0, não 1
-   it("[M2-E] deve retornar exatamente 0 (não 1) para n <= 0", () => {
+   it("deve retornar exatamente 0 (não 1) para n <= 0", () => {
       expect(nextPowerOfTwo(0)).toBe(0);
       expect(nextPowerOfTwo(-5)).toBe(0);
    });
 
-   // M2-F: Math.ceil vs Math.floor — n que já é potência de 2 deve retornar ele mesmo
-   it("[M2-F] deve retornar o próprio n quando ele já é potência de 2", () => {
+   it("deve retornar o próprio n quando ele já é potência de 2", () => {
       expect(nextPowerOfTwo(1)).toBe(1);
       expect(nextPowerOfTwo(2)).toBe(2);
       expect(nextPowerOfTwo(4)).toBe(4);
@@ -109,8 +96,7 @@ describe("nextPowerOfTwo", () => {
       expect(nextPowerOfTwo(16)).toBe(16);
    });
 
-   // M2-F/G/H: n não-potência deve arredondar para CIMA, não para baixo nem errar
-   it("[M2-F/G/H] deve arredondar para a próxima potência de 2 acima", () => {
+   it("deve arredondar para a próxima potência de 2 acima", () => {
       expect(nextPowerOfTwo(3)).toBe(4); 
       expect(nextPowerOfTwo(5)).toBe(8);
       expect(nextPowerOfTwo(6)).toBe(8);
@@ -120,8 +106,7 @@ describe("nextPowerOfTwo", () => {
       expect(nextPowerOfTwo(100)).toBe(128);
    });
 
-   // M2-H: log2 vs log — log2(8)=3, log(8)≈2.08; resultados diferentes
-   it("[M2-H] deve funcionar corretamente com log2 (não log natural)", () => {
+   it("deve funcionar corretamente com log2 (não log natural)", () => {
       expect(nextPowerOfTwo(32)).toBe(32);
       expect(nextPowerOfTwo(33)).toBe(64);
    });
@@ -138,25 +123,25 @@ describe("filterMoviesByCriteria", () => {
       { id: 6, title: "Watchlist+NoRating",      status: "watchlist", isOscar: false, isNational: false, rating: null },
    ] as MovieData[];
 
-   it("[M3-A] não deve incluir filmes com status 'watchlist'", () => {
+   it("não deve incluir filmes com status 'watchlist'", () => {
       const result = filterMoviesByCriteria(movies, "random");
       const ids = result.map((m) => m.id);
       expect(ids).not.toContain(5); 
       expect(ids).not.toContain(6); 
    });
 
-   it("[M3-C] não deve incluir filmes watched com rating null", () => {
+   it("não deve incluir filmes watched com rating null", () => {
       const result = filterMoviesByCriteria(movies, "random");
       const ids = result.map((m) => m.id);
       expect(ids).not.toContain(4); 
    });
 
-   it("[M3-E] deve incluir apenas filmes que são watched E têm rating (não basta um)", () => {
+   it("deve incluir apenas filmes que são watched E têm rating (não basta um)", () => {
       const result = filterMoviesByCriteria(movies, "random");
       expect(result.every((m) => m.status === "watched" && m.rating !== null)).toBe(true);
    });
 
-   it("[M3-B/D] deve incluir todos os filmes watched com rating", () => {
+   it("deve incluir todos os filmes watched com rating", () => {
       const result = filterMoviesByCriteria(movies, "random");
       const ids = result.map((m) => m.id);
       expect(ids).toContain(1);
@@ -165,14 +150,14 @@ describe("filterMoviesByCriteria", () => {
       expect(result).toHaveLength(3);
    });
 
-   it("[M3-F] critério 'oscar' deve retornar apenas filmes com isOscar=true", () => {
+   it("critério 'oscar' deve retornar apenas filmes com isOscar=true", () => {
       const result = filterMoviesByCriteria(movies, "oscar");
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe(1);
       expect(result.every((m) => m.isOscar === true)).toBe(true);
    });
 
-   it("[M3-F] critério 'national' deve retornar apenas filmes com isNational=true", () => {
+   it("critério 'national' deve retornar apenas filmes com isNational=true", () => {
       const result = filterMoviesByCriteria(movies, "national");
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe(2);
@@ -187,35 +172,35 @@ describe("filterMoviesByCriteria", () => {
 });
 
 describe("setupTournament — guarda de mínimo", () => {
-   it("[M4-A] não deve lançar erro com exatamente 2 filmes", () => {
+   it("não deve lançar erro com exatamente 2 filmes", () => {
       const movies = makeMovies([5, 7]);
       expect(() => setupTournament(movies, "random", 2)).not.toThrow();
    });
 
-   it("[M4-B] deve lançar erro com 1 filme", () => {
+   it("deve lançar erro com 1 filme", () => {
       const movies = makeMovies([5]);
       expect(() => setupTournament(movies, "random", 2)).toThrowError("Mínimo de 2 filmes necessários");
    });
 
-   it("[M4-B] deve lançar erro com 0 filmes", () => {
+   it("deve lançar erro com 0 filmes", () => {
       expect(() => setupTournament([], "random", 2)).toThrowError("Mínimo de 2 filmes necessários");
    });
 
-   it("[M4-C] não deve lançar erro com 3 ou mais filmes", () => {
+   it("não deve lançar erro com 3 ou mais filmes", () => {
       const movies = makeMovies([1, 2, 3]);
       expect(() => setupTournament(movies, "random", 3)).not.toThrow();
    });
 });
 
 describe("setupTournament — lógica de quantity", () => {
-   it("[M5-A/B/C] quantity=-1 deve selecionar todos os filmes disponíveis", () => {
+   it("quantity=-1 deve selecionar todos os filmes disponíveis", () => {
       const movies = makeMovies([1, 2, 3, 4, 5, 6]);
       const result = setupTournament(movies, "random", -1);
       const total = allParticipants(result).length;
       expect(total).toBe(6);
    });
 
-   it("[M5-A] quantity positivo deve limitar a seleção, não usar todos", () => {
+   it("quantity positivo deve limitar a seleção, não usar todos", () => {
       const movies = makeMovies([1, 2, 3, 4, 5, 6]);
       const result = setupTournament(movies, "random", 4);
       const total = allParticipants(result).length;
@@ -223,14 +208,14 @@ describe("setupTournament — lógica de quantity", () => {
    });
 
 
-   it("[M5-D] não deve selecionar mais filmes que o total disponível (Math.min)", () => {
+   it("não deve selecionar mais filmes que o total disponível (Math.min)", () => {
       const movies = makeMovies([1, 2, 3]); 
       const result = setupTournament(movies, "random", 10); 
       const total = allParticipants(result).length;
       expect(total).toBe(3); 
    });
 
-   it("[M5-D] quantity menor que o total deve limitar corretamente", () => {
+   it("quantity menor que o total deve limitar corretamente", () => {
       const movies = makeMovies([1, 2, 3, 4, 5]);
       const result = setupTournament(movies, "random", 3);
       expect(allParticipants(result)).toHaveLength(3);
@@ -238,7 +223,7 @@ describe("setupTournament — lógica de quantity", () => {
 });
 
 describe("setupTournament — ordenação", () => {
-   it("[M6-A/B] top_rated deve selecionar os filmes de maior rating", () => {
+   it("top_rated deve selecionar os filmes de maior rating", () => {
       const movies = makeMovies([1, 3, 5, 7, 9]);
       const result = setupTournament(movies, "top_rated", 3);
       const ratings = allParticipants(result).map((m) => m.rating);
@@ -249,7 +234,7 @@ describe("setupTournament — ordenação", () => {
       expect(ratings).not.toContain(3);
    });
 
-   it("[M6-C] worst_rated deve selecionar os filmes de menor rating", () => {
+   it("worst_rated deve selecionar os filmes de menor rating", () => {
       const movies = makeMovies([1, 3, 5, 7, 9]);
       const result = setupTournament(movies, "worst_rated", 3);
       const ratings = allParticipants(result).map((m) => m.rating);
@@ -260,7 +245,7 @@ describe("setupTournament — ordenação", () => {
       expect(ratings).not.toContain(9);
    });
 
-   it("[M6-A/C] top_rated e worst_rated devem selecionar conjuntos opostos", () => {
+   it("top_rated e worst_rated devem selecionar conjuntos opostos", () => {
       const movies = makeMovies([2, 4, 6, 8]);
       const top = allParticipants(setupTournament(movies, "top_rated", 2)).map((m) => m.rating).sort();
       const worst = allParticipants(setupTournament(movies, "worst_rated", 2)).map((m) => m.rating).sort();
@@ -268,7 +253,7 @@ describe("setupTournament — ordenação", () => {
       expect(worst).toEqual([2, 4]);
    });
 
-   it("[M6-D] recent deve selecionar os filmes com maior id", () => {
+   it("recent deve selecionar os filmes com maior id", () => {
       const movies = makeMovies([5, 5, 5, 5, 5]); 
       const result = setupTournament(movies, "recent", 2);
       const ids = allParticipants(result).map((m) => m.id);
@@ -277,7 +262,7 @@ describe("setupTournament — ordenação", () => {
       expect(ids).not.toContain(0);
    });
 
-   it("[M6-D] recent não deve incluir o filme mais antigo quando quantity < total", () => {
+   it("recent não deve incluir o filme mais antigo quando quantity < total", () => {
       const movies = makeMovies([5, 5, 5, 5, 5]);
       const result = setupTournament(movies, "recent", 4);
       const ids = allParticipants(result).map((m) => m.id);
@@ -286,7 +271,7 @@ describe("setupTournament — ordenação", () => {
 });
 
 describe("setupTournament — cálculo de bracket, fighters e byes", () => {
-   it("[M7-A/B] torneio perfeito (8 filmes) deve ter 8 fighters e 0 byes", () => {
+   it("torneio perfeito (8 filmes) deve ter 8 fighters e 0 byes", () => {
       const movies = makeMovies([1, 2, 3, 4, 5, 6, 7, 8]);
       const { fighters, byes, bracketSize } = setupTournament(movies, "random", 8);
       expect(bracketSize).toBe(8);
@@ -295,7 +280,7 @@ describe("setupTournament — cálculo de bracket, fighters e byes", () => {
    });
 
 
-   it("[M7-A/B] 5 filmes → bracketSize=8, 2 fighters, 3 byes", () => {
+   it("5 filmes → bracketSize=8, 2 fighters, 3 byes", () => {
       const movies = makeMovies([1, 2, 3, 4, 5]);
       const { fighters, byes, bracketSize } = setupTournament(movies, "random", 5);
       expect(bracketSize).toBe(8);
@@ -303,7 +288,7 @@ describe("setupTournament — cálculo de bracket, fighters e byes", () => {
       expect(byes).toHaveLength(3);
    });
 
-   it("[M7-A/B] 3 filmes → bracketSize=4, 2 fighters, 1 bye", () => {
+   it("3 filmes → bracketSize=4, 2 fighters, 1 bye", () => {
       const movies = makeMovies([1, 2, 3]);
       const { fighters, byes, bracketSize } = setupTournament(movies, "random", 3);
       expect(bracketSize).toBe(4);
@@ -311,7 +296,7 @@ describe("setupTournament — cálculo de bracket, fighters e byes", () => {
       expect(byes).toHaveLength(1);
    });
 
-   it("[M7-C/D] fighters e byes não devem conter os mesmos filmes", () => {
+   it("fighters e byes não devem conter os mesmos filmes", () => {
       const movies = makeMovies([1, 2, 3, 4, 5]);
       const { fighters, byes } = setupTournament(movies, "random", 5);
       const fighterIds = new Set(fighters.map((m) => m.id));
@@ -319,7 +304,7 @@ describe("setupTournament — cálculo de bracket, fighters e byes", () => {
       expect(byeIds.every((id) => !fighterIds.has(id))).toBe(true);
    });
 
-   it("[M7-C/D] fighters + byes devem cobrir todos os participantes sem perda", () => {
+   it("fighters + byes devem cobrir todos os participantes sem perda", () => {
       const movies = makeMovies([1, 2, 3, 4, 5]);
       const { fighters, byes } = setupTournament(movies, "random", 5);
       expect(fighters.length + byes.length).toBe(5);
@@ -335,7 +320,7 @@ describe("setupTournament — cálculo de bracket, fighters e byes", () => {
 });
 
 describe("setupTournament — embaralhamento final", () => {
-   it("[M8-A/C] critérios não-random devem produzir fighters e byes corretos", () => {
+   it("critérios não-random devem produzir fighters e byes corretos", () => {
       const movies = makeMovies([1, 2, 3, 4, 5]);
       for (const criteria of ["top_rated", "worst_rated", "recent"] as const) {
          const { fighters, byes } = setupTournament(movies, criteria, 5);
@@ -345,13 +330,13 @@ describe("setupTournament — embaralhamento final", () => {
       }
    });
 
-   it("[M8-B] critério random deve produzir fighters e byes corretos", () => {
+   it("critério random deve produzir fighters e byes corretos", () => {
       const movies = makeMovies([1, 2, 3, 4, 5]);
       const { fighters, byes } = setupTournament(movies, "random", 5);
       expect(fighters.length + byes.length).toBe(5);
    });
    
-   it("[M8-A] após embaralhamento, byes e fighters são subconjuntos dos participantes", () => {
+   it("após embaralhamento, byes e fighters são subconjuntos dos participantes", () => {
       const movies = makeMovies([1, 3, 5, 7, 9]);
       const { fighters, byes } = setupTournament(movies, "top_rated", 4);
       const participantIds = new Set(allParticipants({ fighters, byes }).map((m) => m.id));
